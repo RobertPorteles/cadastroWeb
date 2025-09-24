@@ -1,0 +1,279 @@
+<div class="background-layer">
+  <main class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10">
+        <div class="card shadow form-card">
+          <div class="card-body p-4">
+            <h3 class="card-title text-center mb-4">{{ title }}</h3>
+
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+              <div class="mb-3">
+                <label for="nome" class="form-label">Nome completo</label>
+                <input
+                  id="nome"
+                  required
+                  type="text"
+                  class="form-control"
+                  formControlName="nome"
+                  placeholder="Digite o nome do cliente"
+                  [class.is-invalid]="(submitted || userForm.get('nome')?.touched) && userForm.get('nome')?.invalid"
+                />
+                <div class="feedback-slot">
+                  <div class="invalid-feedback" *ngIf="(submitted || userForm.get('nome')?.touched) && userForm.get('nome')?.errors as errors">
+                    <div *ngIf="errors['required']">Nome e obrigatorio.</div>
+                    <div *ngIf="errors['minlength']">Nome precisa ter pelo menos 8 caracteres.</div>
+                    <div *ngIf="errors['maxlength']">Nome pode ter no maximo 100 caracteres.</div>
+                    <div *ngIf="errors['pattern']">Nome nao pode ser composto apenas por espacos.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input
+                    id="email"
+                    required
+                    type="email"
+                    class="form-control"
+                    formControlName="email"
+                    placeholder="exemplo@dominio.com"
+                    [class.is-invalid]="(submitted || userForm.get('email')?.touched) && userForm.get('email')?.invalid"
+                  />
+                  <div class="feedback-slot">
+                    <div class="invalid-feedback" *ngIf="(submitted || userForm.get('email')?.touched) && userForm.get('email')?.errors as errors">
+                      <div *ngIf="errors['required']">Email e obrigatorio.</div>
+                      <div *ngIf="errors['email']">Informe um email valido.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="cpf" class="form-label">CPF</label>
+                  <input
+                    id="cpf"
+                    required
+                    type="text"
+                    class="form-control"
+                    formControlName="cpf"
+                    placeholder="Somente numeros"
+                    maxlength="11"
+                    [class.is-invalid]="(submitted || userForm.get('cpf')?.touched) && userForm.get('cpf')?.invalid"
+                  />
+                  <div class="feedback-slot">
+                    <div class="invalid-feedback" *ngIf="(submitted || userForm.get('cpf')?.touched) && userForm.get('cpf')?.errors as errors">
+                      <div *ngIf="errors['required']">CPF e obrigatorio.</div>
+                      <div *ngIf="errors['pattern']">CPF deve conter exatamente 11 digitos numericos.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="dataNascimento" class="form-label">Data de nascimento</label>
+                  <input
+                    id="dataNascimento"
+                    required
+                    type="date"
+                    class="form-control"
+                    formControlName="dataNascimento"
+                    [class.is-invalid]="(submitted || userForm.get('dataNascimento')?.touched) && userForm.get('dataNascimento')?.invalid"
+                  />
+                  <div class="feedback-slot">
+                    <div class="invalid-feedback" *ngIf="(submitted || userForm.get('dataNascimento')?.touched) && userForm.get('dataNascimento')?.errors as errors">
+                      <div *ngIf="errors['required']">Data de nascimento e obrigatoria.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div formArrayName="enderecos">
+                <div
+                  class="border rounded p-3 mb-4"
+                  *ngFor="let endereco of enderecos.controls; let i = index"
+                  [formGroupName]="i"
+                >
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Endereco {{ i + 1 }}</h5>
+                    <button
+                      type="button"
+                      class="btn btn-outline-danger btn-sm"
+                      (click)="removeEndereco(i)"
+                      *ngIf="enderecos.length > 1"
+                    >
+                      Remover
+                    </button>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label for="cep-{{ i }}" class="form-label">CEP</label>
+                      <div class="input-group">
+                        <input
+                          id="cep-{{ i }}"
+                          type="text"
+                          class="form-control"
+                          formControlName="cep"
+                          placeholder="Ex: 01001000"
+                          maxlength="8"
+                          [class.is-invalid]="(submitted || endereco.get('cep')?.touched) && endereco.get('cep')?.invalid"
+                        />
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          (click)="buscarCep(i)"
+                          [disabled]="loadingCepIndex === i || endereco.get('cep')?.invalid"
+                        >
+                          <span
+                            *ngIf="loadingCepIndex === i"
+                            class="spinner-border spinner-border-sm"
+                            role="status"
+                            aria-hidden="true"
+                          ></span>
+                          <span *ngIf="loadingCepIndex !== i">Buscar</span>
+                        </button>
+                      </div>
+                      <div class="feedback-slot">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="(submitted || endereco.get('cep')?.touched) && endereco.get('cep')?.errors as errors"
+                        >
+                          <div *ngIf="errors['required']">CEP e obrigatorio.</div>
+                          <div *ngIf="errors['pattern']">CEP deve conter 8 digitos numericos.</div>
+                          <div *ngIf="errors['cepNaoEncontrado']">CEP nao encontrado.</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-8 mb-3">
+                      <label for="logradouro-{{ i }}" class="form-label">Logradouro</label>
+                      <input
+                        id="logradouro-{{ i }}"
+                        type="text"
+                        class="form-control"
+                        formControlName="logradouro"
+                        [class.is-invalid]="(submitted || endereco.get('logradouro')?.touched) && endereco.get('logradouro')?.invalid"
+                      />
+                      <div class="feedback-slot">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="(submitted || endereco.get('logradouro')?.touched) && endereco.get('logradouro')?.errors as errors"
+                        >
+                          <div *ngIf="errors['required']">Logradouro e obrigatorio.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="complemento-{{ i }}" class="form-label">Complemento</label>
+                      <input
+                        id="complemento-{{ i }}"
+                        type="text"
+                        class="form-control"
+                        formControlName="complemento"
+                        [class.is-invalid]="(submitted || endereco.get('complemento')?.touched) && endereco.get('complemento')?.invalid"
+                      />
+                      <div class="feedback-slot">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="(submitted || endereco.get('complemento')?.touched) && endereco.get('complemento')?.errors as errors"
+                        >
+                          <div *ngIf="errors['required']">Complemento e obrigatorio.</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="numero-{{ i }}" class="form-label">Numero</label>
+                      <input
+                        id="numero-{{ i }}"
+                        type="text"
+                        class="form-control"
+                        formControlName="numero"
+                        [class.is-invalid]="(submitted || endereco.get('numero')?.touched) && endereco.get('numero')?.invalid"
+                      />
+                      <div class="feedback-slot">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="(submitted || endereco.get('numero')?.touched) && endereco.get('numero')?.errors as errors"
+                        >
+                          <div *ngIf="errors['required']">Numero e obrigatorio.</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                      <label for="bairro-{{ i }}" class="form-label">Bairro</label>
+                      <input
+                        id="bairro-{{ i }}"
+                        type="text"
+                        class="form-control"
+                        formControlName="bairro"
+                        [class.is-invalid]="(submitted || endereco.get('bairro')?.touched) && endereco.get('bairro')?.invalid"
+                      />
+                      <div class="feedback-slot">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="(submitted || endereco.get('bairro')?.touched) && endereco.get('bairro')?.errors as errors"
+                        >
+                          <div *ngIf="errors['required']">Bairro e obrigatorio.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="cidade-{{ i }}" class="form-label">Cidade</label>
+                      <input
+                        id="cidade-{{ i }}"
+                        type="text"
+                        class="form-control"
+                        formControlName="cidade"
+                        [class.is-invalid]="(submitted || endereco.get('cidade')?.touched) && endereco.get('cidade')?.invalid"
+                      />
+                      <div class="feedback-slot">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="(submitted || endereco.get('cidade')?.touched) && endereco.get('cidade')?.errors as errors"
+                        >
+                          <div *ngIf="errors['required']">Cidade e obrigatoria.</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                      <label for="uf-{{ i }}" class="form-label">UF</label>
+                      <input
+                        id="uf-{{ i }}"
+                        type="text"
+                        class="form-control"
+                        formControlName="uf"
+                        maxlength="2"
+                        style="text-transform: uppercase;"
+                        [class.is-invalid]="(submitted || endereco.get('uf')?.touched) && endereco.get('uf')?.invalid"
+                      />
+                      <div class="feedback-slot">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="(submitted || endereco.get('uf')?.touched) && endereco.get('uf')?.errors as errors"
+                        >
+                          <div *ngIf="errors['required']">UF e obrigatoria.</div>
+                          <div *ngIf="errors['pattern']">UF deve ter exatamente 2 letras.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-outline-primary" (click)="addEndereco()">Adicionar endereco</button>
+                <button type="submit" class="btn btn-success" [disabled]="userForm.invalid || loadingCepIndex !== null || isSubmitting">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span *ngIf="!isSubmitting">Salvar cliente</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
