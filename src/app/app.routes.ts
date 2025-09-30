@@ -5,6 +5,7 @@ import { AutenticarUsuario } from './components/pages/autenticar-usuario/autenti
 import { CriarUsuario } from './components/pages/criar-usuario/criar-usuario';
 import { authGuard } from './guards/auth-guard';
 
+
 export const routes: Routes = [
 {
     path: 'pages/dashboard',
